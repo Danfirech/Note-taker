@@ -4,6 +4,7 @@ const fs = require("fs");
 const PORT = process.env.PORT || 3001;
 const app = express();
 const util = require("util");
+const { v4: uuidv4 } = require("uuid");
 
 //MIDDLEWARE
 app.use(express.static("public"));
@@ -25,9 +26,6 @@ app.get("/notes", (req, res) =>
 );
 
 //APP.LISTEN
-app.listen(PORT, () =>
-  console.log(`Example app listening at http://localhost:${PORT}`)
-);
 
 // Function to write data to the JSON file given a destination and some content
 
@@ -50,13 +48,15 @@ const readAndAppend = (content, file) => {
 };
 
 // GET Route for retrieving all the notes
-app.get("/api/db", (req, res) => {
+app.get("/api/notes", (req, res) => {
   console.info(`${req.method} request received for notes`);
-  readFromFile("./db/db.json").then((data) => res.json(JSON.parse(data)));
+  readFromFile(path.join(__dirname, "/db/db.json"), "utf8").then((data) =>
+    res.json(JSON.parse(data))
+  );
 });
 
 // POST Route for a new UX/UI tip
-app.post("/api/db", (req, res) => {
+app.post("/api/notes", (req, res) => {
   console.info(`${req.method} request received to add a notes`);
 
   const { title, text } = req.body;
@@ -65,11 +65,20 @@ app.post("/api/db", (req, res) => {
     const newNote = {
       title,
       text,
+      id: uuidv4(),
     };
 
-    readAndAppend(newNote, "./db/db.json");
+    readAndAppend(newNote, path.join(__dirname, "/db/db.json"));
     res.json(`Note added successfully 🚀`);
   } else {
     res.error("Error in adding Note");
   }
 });
+
+app.delete("/api/notes/:ID", (req, res) => {
+  req.params.ID;
+});
+
+app.listen(PORT, () =>
+  console.log(`Example app listening at http://localhost:${PORT}`)
+);
